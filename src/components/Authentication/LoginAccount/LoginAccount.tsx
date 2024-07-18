@@ -1,15 +1,14 @@
 'use client'
 import Link from 'next/link'
 import React, { useEffect, useState } from 'react'
-import { loginIn, resetPassword } from '../AuthenticationParent';
+import { auth, loginIn, resetPassword } from '../AuthenticationParent';
 import { useRouter } from 'next/navigation';
 import toast from 'react-hot-toast';
+import { onAuthStateChanged } from 'firebase/auth';
 
-type LoginAccountProps = {
-    setUserInfo: React.Dispatch<React.SetStateAction<any>>
-}
-
-const LoginAccount = ({ setUserInfo }: LoginAccountProps) => {
+const LoginAccount = () => {
+    const [userInfo, setUserInfo] = useState<any>();
+    const [loader, setLoader] = useState(true);
 
     const router = useRouter();
     const [forgot, setForgot] = useState(false);
@@ -52,6 +51,17 @@ const LoginAccount = ({ setUserInfo }: LoginAccountProps) => {
                 setForgot(false);
             }).catch(error => console.log(error.message))
     }
+
+
+    useEffect(() => {
+        const Logged = onAuthStateChanged(auth, (user) => {
+            setUserInfo({ user });
+            setLoader(false);
+        })
+        return () => {
+            Logged();
+        }
+    }, []);
 
     return (
         forgot ? <div className='w-full mt-28 pb-24'>

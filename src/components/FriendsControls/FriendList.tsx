@@ -6,10 +6,11 @@ import Link from 'next/link';
 
 type Information = {
     usersData: any,
-    findFrnd: any
+    findFrnd: any,
+    triggerRefetch: any
 }
 
-export default function FriendList({ usersData, findFrnd }: Information) {
+export default function FriendList({ usersData, findFrnd, triggerRefetch }: Information) {
 
     const [frndReq, setFrndReq] = useState("");
 
@@ -31,7 +32,7 @@ export default function FriendList({ usersData, findFrnd }: Information) {
             {
                 findFrnd == "find" ?
                     (usersData && usersData.map((user: any, index: number) => (
-                        ((!(user.friends.find((friend: any) => friend.username == userInfo?.user?.uid)) && user?.status != "pending")) &&
+                        ((!(user?.friends?.find((friend: any) => friend.userName == userInfo?.user?.uid)) && (user?.status != "pending") && user?.uid != userInfo?.user?.uid)) &&
                         <div key={index} className='w-full border rounded my-2 px-3 py-2 hover:shadow-md transition-all duration-300'>
 
                             <div className="flex items-center">
@@ -39,13 +40,13 @@ export default function FriendList({ usersData, findFrnd }: Information) {
                                     <img className='w-16 h-16 object-cover rounded-full' src={user?.img} alt="family" />
                                 </div>
                                 <div className="profile-info">
-                                    <Link className='block px-4 text-lg text-blue-500 font-semibold' href={`/users/${user.username}`}>{user?.displayName}</Link>
-                                    <p className='text-sm px-4 text-black/50'>{user?.username}</p>
+                                    <Link className='block px-4 text-lg text-blue-500 font-semibold' href={`/users/${user.userName}`}>{user?.displayName}</Link>
+                                    <p className='text-sm px-4 text-black/50'>{user?.userName}</p>
                                 </div>
                                 <div className="action flex-1 justify-self-end">
                                     <div className="flex justify-end">
                                         {
-                                            frndReq == user.username ? <p className='text-black/50 text-sm'>Requested</p> : <button onClick={() => setFrndReq(user.username)} className='bg-blue-500 hover:bg-blue-600 transition-all duration-300 text-sm text-white px-3 py-2 rounded'>Add Friend</button>
+                                            frndReq == user.userName ? <p className='text-black/50 text-sm'>Requested</p> : <button onClick={() => setFrndReq(user.userName)} className='bg-blue-500 hover:bg-blue-600 transition-all duration-300 text-sm text-white px-3 py-2 rounded'>Add Friend</button>
                                         }
                                     </div>
                                 </div>
@@ -54,7 +55,7 @@ export default function FriendList({ usersData, findFrnd }: Information) {
                     ))) : findFrnd == "request" &&
                     (
                         usersData && usersData.map((user: any, index: number) => (
-                            ((!(user.friends.find((friend: any) => friend.username == userInfo?.user?.uid))) && user?.status == "pending") &&
+                            ((!(user?.friends?.find((friend: any) => friend.userName == userInfo?.user?.uid))) && (user?.status == "pending") && user?.uid != userInfo?.user?.uid) &&
                             <div key={index} className='w-full border rounded my-2 px-3 py-2 hover:shadow-md transition-all duration-300'>
 
                                 <div className="flex items-center">
@@ -62,8 +63,8 @@ export default function FriendList({ usersData, findFrnd }: Information) {
                                         <img className='w-16 h-16 object-cover rounded-full' src={user?.img} alt="family" />
                                     </div>
                                     <div className="profile-info">
-                                        <Link className='block px-4 text-lg text-blue-500 font-semibold' href={`/users/${user.username}`}>{user?.displayName}</Link>
-                                        <p className='text-sm px-4 text-black/50'>{user?.username}</p>
+                                        <Link className='block px-4 text-lg text-blue-500 font-semibold' href={`/users/${user.userName}`}>{user?.displayName}</Link>
+                                        <p className='text-sm px-4 text-black/50'>{user?.userName}</p>
                                     </div>
                                     <div className="action flex-1 justify-self-end">
                                         <div className="flex justify-end gap-2">
@@ -76,6 +77,8 @@ export default function FriendList({ usersData, findFrnd }: Information) {
                         ))
                     )
             }
-        </div> : <div>not logged</div>
+        </div> : <div className='px-5'>
+            <Link href="/login-account" className='text-blue-500 font-normal underline pt-6 block'>Please Login First</Link>
+        </div>
     )
 }

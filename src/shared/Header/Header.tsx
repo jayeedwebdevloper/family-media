@@ -68,10 +68,7 @@ export default function Header() {
             <Toaster />
             {/* auth loader */}
             <div className="hidden">
-                <LoginAccount setUserInfo={setUserInfo} />
-                <Register setUserInfo={setUserInfo} />
                 <HomePage loader={loader} />
-                <FriendsControls userInfo={userInfo} />
             </div>
 
 

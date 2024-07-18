@@ -1,0 +1,112 @@
+/* FamilyTree.css */
+
+.tree {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    position: relative;
+}
+
+.tree-children {
+    display: flex;
+    justify-content: center;
+    position: relative;
+}
+
+.tree-node {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin: 0 10px;
+    position: relative;
+}
+
+.tree-node::before,
+.tree-node::after {
+    content: '';
+    position: absolute;
+    border-left: 2px solid #ccc;
+}
+
+.tree-node::before {
+    top: 0;
+    left: 50%;
+    height: 20px;
+    transform: translateX(-50%);
+}
+
+.tree-node::after {
+    top: 20px;
+    left: 50%;
+    height: 20px;
+    transform: translateX(-50%);
+}
+
+.tree-node:first-child::after {
+    display: none;
+}
+
+.tree-node:last-child::after {
+    display: none;
+}
+
+.tree-content {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 8px 5px;
+    border: 1px solid #ccc;
+    background-color: #fff;
+    position: relative;
+    margin-top: 20px;
+    border-radius: 4px;
+}
+
+.tree-couple {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    /* added to position the heart absolutely */
+}
+
+.tree-person {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 10px 20px;
+    border: 1px solid #ccc;
+    background-color: #fff;
+    margin: 0 5px;
+    border-radius: 4px;
+}
+
+.tree-children::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 0;
+    background-color: #ccc;
+    z-index: -1;
+}
+
+.tree-children::after {
+    content: '';
+    position: absolute;
+    top: -20px;
+    left: 50%;
+    width: 2px;
+    height: 20px;
+    background-color: #ccc;
+    transform: translateX(-50%);
+    z-index: -1;
+}
+
+/* Heart shape */
+.heart {
+    width: 20px;
+    height: 20px;
+    display: inline-block;
+}

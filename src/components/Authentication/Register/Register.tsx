@@ -2,13 +2,16 @@
 import Link from 'next/link'
 import React, { useEffect, useState } from 'react'
 import { auth, createAccount } from '../AuthenticationParent';
-import { updateProfile } from 'firebase/auth';
+import { onAuthStateChanged, updateProfile } from 'firebase/auth';
+import toast from 'react-hot-toast';
+import { useRouter } from 'next/navigation';
 
-interface RegisterAccountProps {
-    setUserInfo: React.Dispatch<React.SetStateAction<any>>;
-}
 
-const Register: React.FC<RegisterAccountProps> = ({ setUserInfo }) => {
+const Register = () => {
+
+    const navigate = useRouter();
+    const [userInfo, setUserInfo] = useState<any>();
+    const [loader, setLoader] = useState(true);
 
     useEffect(() => {
         window.scrollTo(0, 0);
@@ -53,6 +56,16 @@ const Register: React.FC<RegisterAccountProps> = ({ setUserInfo }) => {
         }
     };
 
+    useEffect(() => {
+        const Logged = onAuthStateChanged(auth, (user) => {
+            setUserInfo({ user });
+            setLoader(false);
+        })
+        return () => {
+            Logged();
+        }
+    }, []);
+
 
     const handleSignUp = (e: any) => {
         e.preventDefault();
@@ -63,26 +76,40 @@ const Register: React.FC<RegisterAccountProps> = ({ setUserInfo }) => {
         const password = form.password.value;
         const cPassword = form.cpassword.value;
 
-        const account = {
-            userName, displayName, email
-        }
-
         if (password != cPassword) {
             setErrorPass("Password not match!");
             return;
         } else {
             createAccount(email, password)
-                .then(result => {
+                .then((result) => {
+                    const account = {
+                        displayName, email, userName, uid: result.user.uid
+                    }
                     if (auth.currentUser)
-                    updateProfile(auth.currentUser, {
-                        displayName: displayName
-                    }).then(() => {
+                        updateProfile(auth.currentUser, {
+                            displayName: displayName
+                        }).then(() => {
 
-                    }).catch(error => {
-                        console.log(error.message)
+                        }).catch(error => {
+                            console.log(error.message)
+                        })
+
+                    fetch('/family-api/users', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify(account)
                     })
-                    form.reset();
-                    setUserInfo(result.user);
+                        .then(res => res.json())
+                        .then(data => {
+                            if (data.acknowledged) {
+                                form.reset();
+                                setUserInfo(result.user);
+                                toast.success("Your account created");
+                                navigate.push('/')
+                            }
+                        })
                 }).catch(err => setErrorMsg(err.message))
         }
 
