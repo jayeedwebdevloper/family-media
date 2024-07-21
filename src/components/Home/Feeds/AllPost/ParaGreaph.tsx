@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 
 interface Post {
-    id: string;
     post: string;
 }
 
@@ -21,11 +20,10 @@ export const ParaGreaph: React.FC<Post> = ({ post }) => {
                 <p className='text-sm'>{fullContent}</p>
             ) : (
                 <div>
-                    <p className='text-sm'>{truncatedContent} 
-                        <button onClick={handleReadMoreClick} className='text-blue-500 text-xs ps-1'>
-                            {isExpanded ? 'Read Less' : 'Read More...'}
-                        </button>
-                    </p>
+                    <p className='text-sm'>{truncatedContent}</p>
+                    <button onClick={handleReadMoreClick} className='text-blue-500 text-xs ps-1'>
+                        {isExpanded ? 'Read Less' : 'Read More...'}
+                    </button>
                 </div>
             )}
         </div>

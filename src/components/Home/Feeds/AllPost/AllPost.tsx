@@ -1,187 +1,172 @@
 import Link from 'next/link'
-import React, { useState } from 'react'
 import { ParaGreaph } from './ParaGreaph'
 import CommentsList from './CommentsList';
 
-export default function AllPost() {
+type PropsType = {
+    usersData: any; handleComment: any; commentLoad: any; handleReact: any; isModalOpen: any; setIsModalOpen: any; modalData: any; setModalData: any; userInfo: any; triggerRefetch: any;
+}
 
-    const [addReact, setAddReact] = useState(false);
+export default function AllPost(props: PropsType) {
 
-    const handleReact = () => {
-        setAddReact(addReact == false ? true : false);
-    }
+    const { userInfo, usersData, handleComment, handleReact, commentLoad, isModalOpen, setIsModalOpen, modalData, setModalData, triggerRefetch } = props;
 
-    const allPostData = [
-        {
-            id: 1,
-            userName: "user 1",
-            profileImg: "/assets/user-avatar.jpg",
-            times: {
-                date: "jun-18-2024",
-                time: "19:43"
-            },
-            posts: {
-                post: "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Praesent et est turpis. Vestibulum turpis sapien, egestas nec mattis eu, efficitur ut ante. Curabitur a velit sed lorem laoreet bibendum. Ut ac velit dapibus, dapibus ex vel, ullamcorper lorem. Class aptent taciti sociosqu ad litora torquent per conubia nostra, per inceptos himenaeos. Cras eget dolor non ligula efficitur tristique.",
-                files: [
-                    "/assets/user-post.jpg"
-                ]
-            },
-            reacts: [
-                {
-                    id: 1,
-                    userName: "user 1",
+    const currentUser = usersData?.find((user: any) => user?.uid == userInfo?.user?.uid);
+
+    const handleDelete = async (data: any) => {
+
+        try {
+            const userId = currentUser._id;
+            const postId = data._id;
+            console.log("Deleting post with userId:", userId, "and postId:", postId);
+
+            const requestBody = JSON.stringify({ userId, postId });
+            const response = await fetch(`/family-api/posts`, {
+                method: 'DELETE',
+                headers: {
+                    'Content-Type': 'application/json',
                 },
-                {
-                    id: 2,
-                    userName: "user 2",
-                },
-                {
-                    id: 3,
-                    userName: "user 3",
-                }
-            ],
-            comments: [
-                {
-                    id: 1,
-                    userName: "user 1",
-                    profile: "/assets/user-avatar.jpg",
-                    comment: "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Praesent et est turpis. Vestibulum turpis"
-                },
-                {
-                    id: 2,
-                    userName: "user 2",
-                    profile: "/assets/user-avatar.jpg",
-                    comment: "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Praesent et est turpis. Vestibulum turpis"
-                },
-                {
-                    id: 3,
-                    userName: "user 3",
-                    profile: "/assets/user-avatar.jpg",
-                    comment: "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Praesent et est turpis. Vestibulum turpis"
-                },
-                {
-                    id: 4,
-                    userName: "user 4",
-                    profile: "/assets/user-avatar.jpg",
-                    comment: "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Praesent et est turpis. Vestibulum turpis"
-                }
-            ]
-        },
-        {
-            id: 2,
-            userName: "user 2",
-            profileImg: "/assets/user-avatar.jpg",
-            times: {
-                date: "jul-18-2024",
-                time: "12:43"
-            },
-            posts: {
-                post: "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Praesent et est turpis. Vestibulum turpis sapien, egestas nec mattis eu, efficitur ut ante. Curabitur a velit sed lorem laoreet bibendum. Ut ac velit dapibus, dapibus ex vel, ullamcorper lorem. Class aptent taciti sociosqu ad litora torquent per conubia nostra, per inceptos himenaeos. Cras eget dolor non ligula efficitur tristique.",
-                files: [
-                    "/assets/user-post.jpg"
-                ]
-            },
-            reacts: [
-                {
-                    id: 1,
-                    userName: "user 1",
-                },
-                {
-                    id: 2,
-                    userName: "user 2",
-                },
-                {
-                    id: 3,
-                    userName: "user 3",
-                }
-            ],
-            comments: [
-                {
-                    id: 1,
-                    userName: "user 1",
-                    profile: "/assets/user-avatar.jpg",
-                    comment: "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Praesent et est turpis. Vestibulum turpis"
-                },
-                {
-                    id: 2,
-                    userName: "user 2",
-                    profile: "/assets/user-avatar.jpg",
-                    comment: "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Praesent et est turpis. Vestibulum turpis"
-                },
-                {
-                    id: 3,
-                    userName: "user 3",
-                    profile: "/assets/user-avatar.jpg",
-                    comment: "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Praesent et est turpis. Vestibulum turpis"
-                },
-                {
-                    id: 4,
-                    userName: "user 4",
-                    profile: "/assets/user-avatar.jpg",
-                    comment: "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Praesent et est turpis. Vestibulum turpis"
-                }
-            ]
-        },
-    ]
+                body: requestBody,
+            });
+
+            if (!response.ok) {
+                const errorData = await response.text().catch(() => ({ error: 'Invalid JSON response' }));
+                console.error('Response status:', response.status);
+                console.error('Response text:', errorData);
+                throw new Error(`Network response was not ok: ${errorData}`);
+            }
+
+            const deletedData = await response.json();
+            console.log('Post deleted successfully:', deletedData);
+            // Update component state or re-fetch data
+        } catch (error: any) {
+            console.error('Error deleting post:', error.message);
+            // Handle error, e.g., show error message to user
+        } finally {
+        }
+    };
+
 
     return (
         <div className='posts bg-white shadow-md rounded m-1 mt-2'>
             {
-                allPostData.map((data: any, i: any) => (
-                    <div key={i} className='px-3 py-4'>
-                        <div className="header flex justify-start gap-4">
-                            <img className='w-10 rounded-full' src={data.profileImg} alt="family" />
-                            <div className="w-auto">
-                                <Link href={`/user/${data.userName}`} className='text-sky-500 font-bold capitalize text-sm'>{data.userName}</Link>
-                                <p className='text-xs text-stone-500'>Published: <span>{data.times.date}</span> <span>{data.times.time}</span></p>
-                            </div>
-                        </div>
-
-                        <div className="content-post">
-                            {
-                                data.posts?.post ? <ParaGreaph id={i} post={data.posts.post}></ParaGreaph> : undefined
-                            }
-                            {
-                                data.posts.files.length > 0 && data.posts.files.map((file: any, i: any) => (
-                                    <img key={i} className='w-full h-auto' src={file} alt="family" />
-                                ))
-                            }
-                        </div>
-
-                        <div className="reacts flex gap-4 py-2">
-                            <button onClick={handleReact} className='flex gap-1 items-center'>
-                                <svg xmlns="http://www.w3.org/2000/svg" fill={addReact ? 'rgb(0, 115, 255)' : "none"} viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="size-4 hover:scale-125">
-                                    <path strokeLinecap="round" strokeLinejoin="round" d="M6.633 10.25c.806 0 1.533-.446 2.031-1.08a9.041 9.041 0 0 1 2.861-2.4c.723-.384 1.35-.956 1.653-1.715a4.498 4.498 0 0 0 .322-1.672V2.75a.75.75 0 0 1 .75-.75 2.25 2.25 0 0 1 2.25 2.25c0 1.152-.26 2.243-.723 3.218-.266.558.107 1.282.725 1.282m0 0h3.126c1.026 0 1.945.694 2.054 1.715.045.422.068.85.068 1.285a11.95 11.95 0 0 1-2.649 7.521c-.388.482-.987.729-1.605.729H13.48c-.483 0-.964-.078-1.423-.23l-3.114-1.04a4.501 4.501 0 0 0-1.423-.23H5.904m10.598-9.75H14.25M5.904 18.5c.083.205.173.405.27.602.197.4-.078.898-.523.898h-.908c-.889 0-1.713-.518-1.972-1.368a12 12 0 0 1-.521-3.507c0-1.553.295-3.036.831-4.398C3.387 9.953 4.167 9.5 5 9.5h1.053c.472 0 .745.556.5.96a8.958 8.958 0 0 0-1.302 4.665c0 1.194.232 2.333.654 3.375Z" />
-                                </svg>
-                                <span className='text-xs'>{data.reacts.length}</span>
-                            </button>
-                            <div className='text-xs flex gap-1 items-center'>
-                                <img src="/icons/comment.svg" alt="family" className='w-4' />
-                                <p>
-                                    {data.comments.length}
-                                </p>
-                            </div>
-                            <button className='text-xs flex gap-1 items-center'>
-                                <img src="/icons/share.svg" alt="family" className='w-4' />
-                            </button>
-                        </div>
-
-                        <div className="comments">
-                            <CommentsList data={data} />
-
-                            <div className='shadow rounded p-2 border flex flex-col sm:flex-row justify-between'>
-                                <div className="2xl:w-14 xl:w-12 w-10">
-                                    <img className='rounded-full' src="/assets/user-avatar.jpg" alt="" />
+                usersData?.map((data: any, i: any) => (
+                    data?.posts.map((post: any, i: number) => (
+                        <div key={i} className='px-3 py-4'>
+                            <div className="header flex justify-between">
+                                <div className='w-auto flex gap-4'>
+                                    <img className='w-12 h-12 object-cover rounded-full border-2 border-blue-500' src={data?.avatar} alt="family" />
+                                    <div className="w-auto">
+                                        <Link href={`/my-profile`} className='text-sky-500 font-bold capitalize text-sm'>{
+                                            data?.displayName
+                                        }</Link>
+                                        <p className='text-xs text-stone-500'>Published:<span> {post?.postDateTime}</span></p>
+                                    </div>
                                 </div>
-                                <form className="w-auto">
-                                    <label htmlFor={`comment${i}`} className='block'>Comment</label>
-                                    <textarea className='2xl:w-[540px] xl:w-[500px] md:w-[320px] sm:w-[450px] w-full outline-none border focus:ring-1 focus:ring-blue-500 px-3 py-2 text-sm rounded' name="comment" id={`comment${i}`}></textarea>
-                                    <button className='block ms-auto px-3 py-1 bg-sky-500 text-white rounded-md hover:bg-sky-600 transition-all duration-300'>Send</button>
-                                </form>
+                                <div className="w-12 text-end">
+                                    {
+                                        currentUser?._id == post?.postUserId && <button onClick={() => {
+                                            window.confirm("Are You Sure For Delete This Post ?") && handleDelete(post)
+                                        }} className='hover:bg-slate-200 flex items-center justify-center h-10 w-10 rounded-full'><img className='w-1/2' src="/icons/delete.svg" alt="delete" /></button>
+                                    }
+                                </div>
                             </div>
 
+                            <div className="content-post relative">
+                                <div className={`absolute z-[150] w-full h-auto bg-black/70 transition-all duration-300 ${isModalOpen[i] ? "visible scale-100" : "invisible scale-0"}`}>
+                                    <p className='text-white text-lg font-bold py-1 px-3 text-end cursor-pointer' onClick={() => {
+                                        setIsModalOpen((prevOpen:any) => ({ ...prevOpen, [i]: false }));
+                                        setModalData({});
+                                    }}>⨉</p>
+                                    {modalData?.photo &&
+                                        <img className='w-3/5 h-auto mx-auto mb-4' src={modalData.photo} alt="photo" />
+                                    }
+                                    {modalData?.video &&
+                                        <video controls className='w-3/5 h-auto mx-auto mb-4' src={modalData.video} />
+                                    }
+                                </div>
+                                {
+                                    post?.content ? <ParaGreaph key={i} post={post?.content}></ParaGreaph> : undefined
+                                }
+                                <div className={`${post?.photoUrl && post?.videoUrl ? "flex" : "w-full"} flex-wrap justify-center`}>
+                                    {
+                                        post?.photoUrl ? (
+                                            <div className={`w-full p-1 ${post?.photoUrl && post?.videoUrl ? "lg:w-1/2" : ""}`}>
+                                                {
+                                                    post?.photoUrl != "" && (
+                                                        <img onClick={() => {
+                                                            setIsModalOpen((prevOpen:any) => ({ ...prevOpen, [i]: true }));
+                                                            setModalData({ photo: post.photoUrl });
+                                                        }} key={i} className='w-full h-[250px] object-cover cursor-pointer' src={post?.photoUrl} alt="family" />
+                                                    )
+                                                }
+                                            </div>
+                                        ) : ""
+                                    }
+                                    {
+                                        post?.videoUrl ? (
+                                            <div className={`w-full p-1 ${post?.photoUrl && post?.videoUrl ? "lg:w-1/2" : ""}`}>
+                                                {
+                                                    post?.videoUrl != "" && (
+                                                        <video onClick={() => {
+                                                            setIsModalOpen((prevOpen:any) => ({ ...prevOpen, [i]: true }));
+                                                            setModalData({ video: post?.videoUrl });
+                                                        }} key={i} className='w-full h-[250px] object-cover' src={post?.videoUrl} controls />
+                                                    )
+                                                }
+                                            </div>
+                                        ) : ""
+                                    }
+                                </div>
+                            </div>
+
+                            <div className="reacts flex gap-4 py-2">
+                                <button onClick={() => handleReact(post)} className='flex gap-1 items-center'>
+                                    <svg
+                                        xmlns="http://www.w3.org/2000/svg"
+                                        fill={post?.reacts?.find((react: any) => react.userId === currentUser._id) ? 'rgb(0, 115, 255)' : "none"}
+                                        viewBox="0 0 24 24"
+                                        strokeWidth={1.5}
+                                        stroke="currentColor"
+                                        className={`size-4 hover:scale-125`}
+                                        onClick={() => handleReact(post)}
+                                    >
+                                        <path
+                                            strokeLinecap="round"
+                                            strokeLinejoin="round"
+                                            d="M6.633 10.25c.806 0 1.533-.446 2.031-1.08a9.041 9.041 0 0 1 2.861-2.4c.723-.384 1.35-.956 1.653-1.715a4.498 4.498 0 0 0 .322-1.672V2.75a.75.75 0 0 1 .75-.75 2.25 2.25 0 0 1 2.25 2.25c0 1.152-.26 2.243-.723 3.218-.266.558.107 1.282.725 1.282m0 0h3.126c1.026 0 1.945.694 2.054 1.715.045.422.068.85.068 1.285a11.95 11.95 0 0 1-2.649 7.521c-.388.482-.987.729-1.605.729H13.48c-.483 0-.964-.078-1.423-.23l-3.114-1.04a4.501 4.501 0 0 0-1.423-.23H5.904m10.598-9.75H14.25M5.904 18.5c.083.205.173.405.27.602.197.4-.078.898-.523.898h-.908c-.889 0-1.713-.518-1.972-1.368a12 12 0 0 1-.521-3.507c0-1.553.295-3.036.831-4.398C3.387 9.953 4.167 9.5 5 9.5h1.053c.472 0 .745.556.5.96a8.958 8.958 0 0 0-1.302 4.665c0 1.194.232 2.333.654 3.375Z"
+                                        />
+                                    </svg>
+                                    <span className='text-xs'>
+                                        {post?.reacts?.length}
+                                    </span>
+                                </button>
+                                <div className='text-xs flex gap-1 items-center'>
+                                    <img src="/icons/comment.svg" alt="family" className='w-4' />
+                                    <p>
+                                        {post?.comments?.length}
+                                    </p>
+                                </div>
+                            </div>
+
+                            <div className="comments">
+                                {
+                                    commentLoad ? <div className='text-md text-center py-4'>Loading....</div> : <CommentsList post={post} />
+                                }
+                                <div className='shadow rounded p-2 border flex flex-col sm:flex-row justify-between'>
+                                    <div className="2xl:w-12 xl:w-10 w-8 2xl:h-12 xl:h-10 h-8">
+                                        <img className='rounded-full w-full h-full object-cover' src={currentUser?.avatar} alt="" />
+                                    </div>
+                                    <form onSubmit={(e) => handleComment(e, post)} className="w-auto">
+                                        <label htmlFor={`comment${i}`} className='block'>Comment</label>
+                                        <textarea required className='2xl:w-[520px] xl:w-[500px] md:w-[320px] sm:w-[450px] w-full outline-none border focus:ring-1 focus:ring-blue-500 px-3 py-2 text-sm rounded' name="comment" id={`comment${i}`}></textarea>
+                                        <button className='block ms-auto px-3 py-1 bg-sky-500 text-white rounded-md hover:bg-sky-600 transition-all duration-300'>Send</button>
+                                    </form>
+                                </div>
+
+                            </div>
                         </div>
-                    </div>
+                    ))
+
                 ))
             }
         </div>
