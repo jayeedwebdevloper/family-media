@@ -3,17 +3,20 @@ import Image from 'next/image';
 import React, { useEffect, useState } from 'react'
 import FamilyPosts from './FamilyPosts';
 import { CldUploadWidget } from 'next-cloudinary';
+import { useRouter } from 'next/navigation';
 
 type PostType = {
-    userInfo: any; usersData: any; triggerRefetch: any; currentUser: any;
+    userInfo: any; usersData: any; triggerRefetch: any; currentUser: any; currentGroup:any
 }
 
 export default function FamilyGroup(props: PostType) {
-    const {userInfo, usersData, triggerRefetch, currentUser} = props;
+    const { userInfo, usersData, triggerRefetch, currentUser, currentGroup } = props;
     useEffect(() => {
         window.scrollTo(0, 0);
         document.title = "Our Family Group"
-    }, [])
+    }, []);
+
+    const [loader, setLoader] = useState(false);
 
 
     const [postPhoto, setPostPhoto] = useState<any>();
@@ -21,24 +24,85 @@ export default function FamilyGroup(props: PostType) {
 
     const [postButton, setPostButton] = useState(false);
 
+    const navigate = useRouter()
 
-    // const handleSubmit = (event: any) => {
-    //     event.preventDefault();
-    //     const name = cu.userName;
-    //     const email = userData.email;
-    //     const profile = userData.profile;
-    //     const form = event.target;
-    //     const post = form.post.value;
 
-    //     const postData = {
-    //         name, email, profile, post
-    //     }
+    const handleSubmit = (event: any) => {
+        event.preventDefault();
 
-    //     console.log(postData);
+        if (postButton != true) {
+            return;
+        } else {
 
-    //     form.reset();
+            // Get current date and time
+            const currentDate = new Date();
+            const formattedDate = currentDate.toLocaleDateString('en-US', {
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric',
+            });
+            const formattedTime = currentDate.toLocaleTimeString('en-US', {
+                hour: 'numeric',
+                minute: '2-digit',
+                hour12: true, // Adjust for 12-hour or 24-hour format as needed
+            });
+            const postDateTime = `${formattedDate} at ${formattedTime}`;
 
-    // }
+
+            const form = event.target;
+            const post = form.post.value;
+
+            const postData = {
+                postUserId: currentUser._id,
+                content: post || '',
+                photoUrl: postPhoto?.secure_url || '',
+                videoUrl: postVideo?.secure_url || '',
+                postDateTime: postDateTime,
+                avatar: currentUser.avatar,
+                userName: currentUser.userName,
+                displayName: currentUser.displayName,
+            }
+
+            const cleanedPost = Object.fromEntries(
+                Object.entries(postData).filter(([_, value]) => value !== '')
+            );
+
+            const updateBody = {
+                groupId: currentGroup._id,
+                post: cleanedPost,
+            };
+
+            fetch(`/family-api/groups/post`, {
+                method: "PUT",
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(updateBody),
+            })
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error(`Network response was not ok: ${response.statusText}`);
+                    }
+                    setLoader(true);
+                    return response.json();
+                })
+                .then(data => {
+                    form.reset();
+                    navigate.push("/family-memories")
+                    setPostPhoto(undefined);
+                    setPostVideo(undefined);
+                    setPostButton(false);
+                    setLoader(false); // Clear form inputs and media state
+                })
+                .catch(error => {
+                    console.error('Error updating user:', error);
+                });
+
+            // console.log(postData);
+        }
+        ;
+
+    }
     return (
         <div className='post-section md:m-1 bg-white shadow rounded-md border'>
             <div className="flex flex-col sm:flex-row gap-2 p-5 justify-between">
@@ -47,7 +111,7 @@ export default function FamilyGroup(props: PostType) {
                         currentUser?.avatar ? <img className='w-full' src={currentUser?.avatar} alt='family' /> : <img className='w-3/5' src="/icons/profile.svg" alt="family" />
                     }
                 </div>
-                <form className='border rounded block 2xl:w-[530px] xl:w-[500px] md:w-[320px] sm:w-[480px] w-full'>
+                <form onSubmit={handleSubmit} className='border rounded block 2xl:w-[530px] xl:w-[500px] md:w-[320px] sm:w-[480px] w-full'>
                     <textarea name="post" id="post" className='w-full sm:h-24 h-16 px-3 py-1 outline-0 appearance-none border-0 resize-none' placeholder='Write something'></textarea>
 
                     <div className="flex gap-1 px-2">
@@ -117,7 +181,7 @@ export default function FamilyGroup(props: PostType) {
                 </form>
             </div>
 
-            <FamilyPosts currentUser={currentUser}  />
+            {loader ? <div className='text-lg w-full h-screen'>Loading...</div> : <FamilyPosts currentUser={currentUser} />}
         </div>
     )
 }

@@ -46,10 +46,10 @@ export default function FamilyPosts({ currentUser }: PropsType) {
     const handleReact = async (post: any) => {
 
         try {
-            const requestBody = JSON.stringify({ userId: currentUser._id, postId: post._id, postUserId: post.postUserId });
-            console.log('Request body:', requestBody);
+            const requestBody = JSON.stringify({ userId: currentUser._id, postId: post._id, postUserId: post.postUserId, groupId: currentGroup._id });
+            // console.log('Request body:', requestBody);
 
-            const response = await fetch(`/family-api/posts/${post._id}/react`, {
+            const response = await fetch(`/family-api/groups/${post._id}/react`, {
                 method: 'PUT',
                 headers: {
                     'Content-Type': 'application/json',
@@ -65,7 +65,8 @@ export default function FamilyPosts({ currentUser }: PropsType) {
             }
 
             const data = await response.json();
-            console.log('React update successful:', data);
+            triggerRefetch();
+            // console.log('React update successful:', data);
         } catch (error: any) {
             console.error('Error reacting to post:', error.message);
         } finally {
@@ -167,7 +168,7 @@ export default function FamilyPosts({ currentUser }: PropsType) {
         }
     };
 
-    console.log(currentGroup)
+    // console.log(currentGroup)
 
     return (
         <div className='posts bg-white shadow-md rounded mt-2'>
@@ -178,7 +179,7 @@ export default function FamilyPosts({ currentUser }: PropsType) {
                             <div className='w-auto flex gap-4'>
                                 <img className='w-12 h-12 object-cover rounded-full border-2 border-blue-500' src={data?.avatar} alt="family" />
                                 <div className="w-auto">
-                                    <Link href={`/users/username/${data.userName}`} className='text-sky-500 font-bold capitalize text-sm'>{
+                                    <Link href={`/users/${data.userName}`} className='text-sky-500 font-bold capitalize text-sm'>{
                                         data?.displayName
                                     }</Link>
                                     <p className='text-xs text-stone-500'>Published:<span> {data?.postDateTime}</span></p>

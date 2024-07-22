@@ -180,7 +180,7 @@ export default function MyFamily() {
     }, [refetch]);
 
     const currentGroup = groupData?.find((group: any) => group._id == (currentUser?.groups?.map((grp: any) => grp.groupId)));
-    console.log(currentGroup)
+    // console.log(currentGroup)
 
     const [dataLoaded, setDataLoaded] = useState(false);
     useEffect(() => {
@@ -292,14 +292,14 @@ export default function MyFamily() {
 
                             <div className="xl:w-[700px] md:w-[550px] w-full h-auto mt-[10px] pb-2 overflow-x-hidden overflow-y-scroll custom-scroll rounded">
                                 {
-                                    selectedMemories == "" ? <FamilyGroup userInfo={userInfo} usersData={usersData} triggerRefetch={triggerRefetch} currentUser={currentUser} /> : <FamilyMemories memoryPage={memoryPage} />
+                                    selectedMemories == "" ? <FamilyGroup userInfo={userInfo} usersData={usersData} triggerRefetch={triggerRefetch} currentUser={currentUser} currentGroup={currentGroup} /> : <FamilyMemories memoryPage={memoryPage} />
                                 }
                             </div>
 
                             <div className="h-fit bg-white w-full md:w-[300px] mt-[10px] shadow rounded px-4 py-2 custom-scroll">
                                 <h2 className='text-lg py-1 font-semibold text-blue-950 border-b-2 border-b-sky-500'>Family Members</h2>
                                 <button className='bg-blue-500 hover:bg-blue-600 w-full block my-1 py-1 rounded-md text-white transition-all duration-300' onClick={() => setOpenModal("block")}>Add Member</button>
-                                {/* <MemberList usersData={usersData} triggerRefetch={triggerRefetch} userInfo={userInfo} loader={loader} setLoader={setLoader} /> */}
+                                <MemberList usersData={usersData} triggerRefetch={triggerRefetch} userInfo={userInfo} loader={loader} setLoader={setLoader} currentGroup={currentGroup} />
                             </div>
                         </div>
                     </div>

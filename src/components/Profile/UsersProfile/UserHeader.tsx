@@ -51,12 +51,14 @@ export default function UserHeader(props: PropsType) {
         // console.log(user)
     }
 
+    const currentUser = usersData?.find((user: any) => user?.uid == userInfo?.user?.uid);
+
     return (
         <div className='container mx-auto px-2 md:px-5'>
             <div className="container mx-auto px-0 md:px-6">
                 <div className="profile-header shadow rounded relative">
                     {
-                        selectedUser && <div className={`w-full h-[300px] mt-[75px] ${!selectedUser?.cover && "flex items-center justify-center bg-slate-300"}`}>
+                        selectedUser?.cover && <div className={`w-full h-[300px] mt-[75px] ${!selectedUser?.cover && "flex items-center justify-center bg-slate-300"}`}>
                             {
                                 selectedUser?.cover ? <img className='w-full h-full object-cover rounded' src={selectedUser?.cover} alt="family" /> : <h1 className='font-bold text-black/50 text-xl'>Cover Photo Not Added</h1>
                             }
@@ -70,7 +72,7 @@ export default function UserHeader(props: PropsType) {
                         </div>
                     }
                     {
-                        selectedUser?.friends?.find((friend: any) => friend?.uid != userInfo?.user?.uid) || selectedUser?.friends?.length == 0 && <button onClick={() => handleReq(selectedUser)} className='bg-blue-500 hover:bg-blue-700 text-white text-sm py-2 px-3 rounded-md absolute right-3 bottom-3'>Add Friend</button>
+                        selectedUser?.friends?.find((friend: any) => (friend?.uid != userInfo?.user?.uid) || selectedUser?.friends?.length == 0) && (currentUser?._id != selectedUser?._id) && <button onClick={() => handleReq(selectedUser)} className='bg-blue-500 hover:bg-blue-700 text-white text-sm py-2 px-3 rounded-md absolute right-3 bottom-3'>Add Friend</button>
                     }
                 </div>
                 <div className="flex w-full bg-white shadow justify-center items-center">

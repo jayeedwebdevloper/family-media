@@ -56,7 +56,7 @@ export default function AllPost(props: PropsType) {
                                 <div className='w-auto flex gap-4'>
                                     <img className='w-12 h-12 object-cover rounded-full border-2 border-blue-500' src={data?.avatar} alt="family" />
                                     <div className="w-auto">
-                                        <Link href={`/my-profile`} className='text-sky-500 font-bold capitalize text-sm'>{
+                                        <Link href={`/users/${data?.userName}`} className='text-sky-500 font-bold capitalize text-sm'>{
                                             data?.displayName
                                         }</Link>
                                         <p className='text-xs text-stone-500'>Published:<span> {post?.postDateTime}</span></p>

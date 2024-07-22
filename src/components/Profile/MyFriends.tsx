@@ -72,30 +72,30 @@ export default function MyFriends(props: PropsType) {
             {usersData?.map((data: any) => (
                 data.uid === userInfo?.user?.uid &&
                 data.friends.map((fr: any, i: number) => (
-                    fr.status !== 'family' && (
-                        <div key={i} className="w-full border rounded my-2 px-3 py-2 hover:shadow-md transition-all duration-300">
-                            <div className="flex items-center">
-                                <div className="avatar">
-                                    <img className="w-12 h-12 object-cover rounded-full" src={fr?.avatar} alt="friend" />
-                                </div>
-                                <div className="profile-info">
-                                    <Link className="block px-4 text-sm text-blue-500 font-semibold" href={`/users/${fr.userName}`}>
-                                        {fr?.displayName}
-                                    </Link>
-                                    <p className="text-sm px-4 text-black/50">{fr?.userName}</p>
-                                </div>
-                                <div className="action flex-1 justify-self-end">
-                                    <div className="flex justify-end gap-2">
-                                        <button onClick={() => handleDeleteFriend({ fr, userId: data._id })} className="bg-slate-400 hover:bg-slate-600 transition-all duration-300 text-[8px] text-white px-3 py-2 rounded">
-                                            Delete
-                                        </button>
-                                    </div>
+
+                    <div key={i} className="w-full border rounded my-2 px-3 py-2 hover:shadow-md transition-all duration-300">
+                        <div className="flex items-center">
+                            <div className="avatar">
+                                <img className="w-12 h-12 object-cover rounded-full" src={fr?.avatar} alt="friend" />
+                            </div>
+                            <div className="profile-info">
+                                <Link className="block px-4 text-sm text-blue-500 font-semibold" href={`/users/${fr.userName}`}>
+                                    {fr?.displayName}
+                                </Link>
+                                <p className="text-sm px-4 text-black/50">{fr?.userName}</p>
+                            </div>
+                            <div className="action flex-1 justify-self-end">
+                                <div className="flex justify-end gap-2">
+                                    <button onClick={() => handleDeleteFriend({ fr, userId: data._id })} className="bg-slate-400 hover:bg-slate-600 transition-all duration-300 text-[8px] text-white px-3 py-2 rounded">
+                                        Delete
+                                    </button>
                                 </div>
                             </div>
                         </div>
-                    )
+                    </div>
+                )
                 ))
-            ))}
+            )}
         </div>
     );
 }
