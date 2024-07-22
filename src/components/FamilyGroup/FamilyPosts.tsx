@@ -30,25 +30,25 @@ export default function FamilyPosts({ currentUser }: PropsType) {
 
     const currentGroup = groupData?.find((group: any) => group._id == (currentUser?.groups?.map((grp: any) => grp.groupId)));
 
-    // useEffect(() => {
-    //     if (actionReact) {
-    //         setIsReacting(true);
-    //         const timeoutId = setTimeout(() => {
-    //             triggerRefetch();
-    //             setIsReacting(false);
-    //             setActionReact(false);
-    //         }, 1000);
+    useEffect(() => {
+        if (addReact) {
+            setRefetch(refetch + 1);
+            const timeoutId = setTimeout(() => {
+                triggerRefetch();
+                setRefetch(0)
+                setAddReact(false);
+            }, 1000);
 
-    //         return () => clearTimeout(timeoutId);
-    //     }
-    // }, [actionReact]);
+            return () => clearTimeout(timeoutId);
+        }
+    }, [addReact]);
 
     const handleReact = async (post: any) => {
 
         try {
             const requestBody = JSON.stringify({ userId: currentUser._id, postId: post._id, postUserId: post.postUserId, groupId: currentGroup._id });
             // console.log('Request body:', requestBody);
-
+            setAddReact(true);
             const response = await fetch(`/family-api/groups/${post._id}/react`, {
                 method: 'PUT',
                 headers: {
@@ -66,6 +66,7 @@ export default function FamilyPosts({ currentUser }: PropsType) {
 
             const data = await response.json();
             triggerRefetch();
+            setAddReact(true)
             // console.log('React update successful:', data);
         } catch (error: any) {
             console.error('Error reacting to post:', error.message);
@@ -95,6 +96,7 @@ export default function FamilyPosts({ currentUser }: PropsType) {
         setCommentLoad(true);
         const commentData = {
             userId: currentUser._id,
+            groupId: currentGroup._id,
             postId: data._id,
             postUserId: data.postUserId,
             comment,
@@ -103,9 +105,9 @@ export default function FamilyPosts({ currentUser }: PropsType) {
 
         try {
             const requestBody = JSON.stringify(commentData);
-            console.log('Request body:', requestBody);
+            // console.log('Request body:', requestBody);
 
-            const response = await fetch(`/family-api/posts/${commentData.postId}/comment`, {
+            const response = await fetch(`/family-api/groups/${commentData.postId}/comment`, {
                 method: 'PUT',
                 headers: {
                     'Content-Type': 'application/json',
@@ -121,28 +123,29 @@ export default function FamilyPosts({ currentUser }: PropsType) {
             }
 
             const data = await response.json();
-            console.log('React update successful:', data);
+            // console.log('React update successful:', data);
         } catch (error: any) {
             console.error('Error reacting to post:', error.message);
         } finally {
             setCommentLoad(false);
             form.reset()
+            setAddReact(true)
         }
 
         // console.log(commentData);
 
     }
 
+    // console.log(currentUser?._id)
+
     const handleDelete = async (data: any) => {
-        setLoader(true);
-
         try {
-            const userId = currentUser._id;
-            const postId = data._id;
-            console.log("Deleting post with userId:", userId, "and postId:", postId);
-
-            const requestBody = JSON.stringify({ userId, postId });
-            const response = await fetch(`/family-api/posts`, {
+            const requestBody = JSON.stringify({
+                userId: currentUser._id,
+                postId: data._id,
+                groupId: currentGroup._id,
+            });
+            const response = await fetch(`/family-api/groups/`, {
                 method: 'DELETE',
                 headers: {
                     'Content-Type': 'application/json',
@@ -158,7 +161,9 @@ export default function FamilyPosts({ currentUser }: PropsType) {
             }
 
             const deletedData = await response.json();
-            console.log('Post deleted successfully:', deletedData);
+            setAddReact(true)
+            triggerRefetch();
+            // console.log('Post deleted successfully:', deletedData);
             // Update component state or re-fetch data
         } catch (error: any) {
             console.error('Error deleting post:', error.message);
@@ -173,7 +178,9 @@ export default function FamilyPosts({ currentUser }: PropsType) {
     return (
         <div className='posts bg-white shadow-md rounded mt-2'>
             {
-                currentGroup?.posts?.map((data: any, i: any) => (
+                currentGroup?.posts
+                    ?.sort((a:any, b:any) => new Date(b.postDateTime).getTime() - new Date(a.postDateTime).getTime())
+                    .map((data:any, i:number) => (
                     <div key={i} className='px-3 py-4'>
                         <div className="header flex justify-between">
                             <div className='w-auto flex gap-4'>

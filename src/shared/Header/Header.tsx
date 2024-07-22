@@ -131,12 +131,6 @@ export default function Header() {
                                             </Link>
                                         </li>
                                         <li className='px-3 py-1 hover:bg-slate-200 transition-all duration-300'>
-                                            <Link className='flex gap-3 items-center justify-start text-sm py-2' href="/settings">
-                                                <Image className='w-5' width={1000} height={1000} src="/icons/settings.svg" alt='family' />
-                                                Account Settings
-                                            </Link>
-                                        </li>
-                                        <li className='px-3 py-1 hover:bg-slate-200 transition-all duration-300'>
                                             <button onClick={handleLogout} className='flex gap-3 items-center justify-start text-sm py-2 bg-transparent border-0 outline-none'>
                                                 <Image className='w-5' width={1000} height={1000} src="/icons/power.svg" alt='family' />
                                                 Logout

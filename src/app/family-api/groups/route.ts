@@ -78,3 +78,52 @@ export async function PUT(req: NextRequest) {
         return NextResponse.json({ error: 'Failed to add user to group' }, { status: 500 });
     }
 }
+
+export async function DELETE(req: NextRequest) {
+    try {
+        const { database } = await connectToDatabase();
+        const groupsCollection = database.collection("groups");
+
+        const { userId, postId, groupId } = await req.json();
+
+        console.log("Received delete request for userId:", groupId, "and postId:", postId);
+
+        if (!postId || !groupId) {
+            console.error('Missing userId or postId');
+            return NextResponse.json({ error: "Missing userId or postId or groupId" }, { status: 400 });
+        }
+
+        if (!ObjectId.isValid(groupId)) {
+            console.error('Invalid user ID:', userId);
+            return NextResponse.json({ error: "Invalid user ID" }, { status: 400 });
+        }
+
+        const group = await groupsCollection.findOne({ _id: new ObjectId(groupId) });
+        if (!group) {
+            console.error('Group not found');
+            return NextResponse.json({ error: 'Group not found' }, { status: 404 });
+        }
+
+        const postIndex = group.posts.findIndex((post: any) => post._id === postId);
+        if (postIndex === -1) {
+            console.error('Post not found');
+            return NextResponse.json({ error: 'Post not found' }, { status: 404 });
+        }
+
+        const result = await groupsCollection.updateOne(
+            { _id: new ObjectId(groupId) },
+            { $pull: { posts: { _id: postId } } }
+        );
+
+        if (result.modifiedCount === 0) {
+            console.error('Failed to delete post');
+            return NextResponse.json({ error: 'Failed to delete post' }, { status: 500 });
+        }
+
+        console.log('Post deleted successfully');
+        return NextResponse.json({ message: "Post deleted successfully" });
+    } catch (e) {
+        console.error("Error deleting post:", e);
+        return NextResponse.json({ error: "Failed to delete post" }, { status: 500 });
+    }
+}

@@ -27,78 +27,7 @@ export default function MyFamily() {
         }
     }, []);
 
-    const handleAddMember = (e: any) => {
-        e.preventDefault();
-        const form = e.target;
-        const member = form.member.value;
-        const role = form.role?.value;
-        const displayRole = form.displayRole?.value;
-        const role2 = form.role2?.value;
-        const displayRole2 = form.displayRole2?.value;
-
-
-        const friendData = usersData?.find((user: any) => user.userName == member)
-        const currentUserCheck = usersData?.find((user: any) => user?.uid == userInfo?.user?.uid);
-        const friend = currentUserCheck.friends.find((friend: any) => friend.uid == friendData.uid)
-
-        const user = currentUserCheck._id;
-        const addFamily = {
-            userId: user,
-            friend: {
-                ...friend,
-                status: "family",
-                displayRole,
-                role
-            }
-        }
-
-        const secondUser = usersData.find((user: any) => user.uid == friend.uid);
-        const user2 = secondUser._id;
-        const friend2 = secondUser.friends.find((friend: any) => friend.uid == currentUserCheck.uid)
-
-        const addFamily2 = {
-            userId: user2,
-            friend: {
-                ...friend2,
-                status: "family",
-                displayRole: displayRole2,
-                role: role2
-            }
-        }
-
-        // console.log(addFamily, addFamily2);
-
-        fetch(`/family-api/users/${user}`, {
-            method: "PUT",
-            headers: {
-                "Content-Type": "application/json"
-            },
-            body: JSON.stringify(addFamily)
-        })
-            .then(res => res.json())
-            .then(data => {
-                fetch(`/family-api/users/${user2}`, {
-                    method: "PUT",
-                    headers: {
-                        "Content-Type": "application/json"
-                    },
-                    body: JSON.stringify(addFamily2)
-                })
-                    .then(res => res.json())
-                    .then(data => {
-
-                        triggerRefetch();
-                    })
-            })
-        setOpenModal("hidden");
-        setSelectOption("");
-        form.reset();
-    }
-
-
-    const [selectedMemories, setSelectMemories] = useState<string>("");
-    const [memoryPage, setMemoryPage] = useState<any>();
-
+    const [selectedMemories, setSelectMemories] = useState<string>("")
 
     const [usersData, setUsersData] = useState<any>([]);
     const [refetch, setRefetch] = useState(0)
@@ -193,6 +122,54 @@ export default function MyFamily() {
 
     const [changeCoverPhoto, setChangeCover] = useState<any>(undefined);
 
+    const [addingMember, setAddingMember] = useState(false);
+
+    const handleAddMember = (e: any) => {
+        setAddingMember(true)
+        e.preventDefault();
+        const form = e.target;
+        const member = form.member.value;
+
+
+        const addFamily = {
+            groupId: currentGroup._id,
+            userId: member
+        }
+
+        // console.log(addFamily);
+
+        fetch(`/family-api/groups/${currentGroup._id}/member`, {
+            method: "PUT",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify(addFamily)
+        })
+            .then(res => res.json())
+            .then(data => {
+                // console.log(data)
+                fetch('/family-api/users/groups', {
+                    method: "PUT",
+                    headers: {
+                        "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify({ groupId: data.groupId, userId: data.userId })
+                }).then(res => res.json())
+                    .then(data => {
+                        triggerRefetch()
+                        setLoader(false);
+                        setHitCreate(false);
+                        setPostPhoto(null);
+                        setFoundGroup(false);
+                        setOpenModal("hidden");
+                        setSelectOption("");
+                        triggerRefetch();
+                        setAddingMember(false);
+                        form.reset();
+                    })
+            })
+    }
+
     return (
         loader ? <div className='text-lg w-full h-screen flex items-center justify-center bg-slate-200'>Loading...</div> : dataLoaded != true ? <div className='text-lg w-full h-screen flex items-center justify-center bg-slate-200'>Loading...</div> :
             (currentUser?.groups.length ?
@@ -232,7 +209,7 @@ export default function MyFamily() {
                             </div>
 
                             {/* add member */}
-                            <div className={`w-full h-screen fixed left-0 right-0 top-0 bg-black/50 flex items-center justify-center ${openModal}`}>
+                            <div className={`w-full h-screen z-[200] fixed left-0 right-0 top-0 bg-black/50 flex items-center justify-center ${openModal}`}>
                                 <form onSubmit={handleAddMember} className='w-[310px] p-3 bg-white rounded-md'>
                                     <div className="flex justify-between items-center">
                                         <h1 className='text-md font-semibold'>Add Member</h1>
@@ -250,30 +227,19 @@ export default function MyFamily() {
                                             <select name="member" defaultValue="Select" className='w-full outline-none border-none ring-1 ring-black/50 px-1 py-1 rounded-md cursor-pointer capitalize'>
                                                 <option disabled>Select</option>
                                                 {
-                                                    usersData.map((users: any, i: number) => (
-                                                        (users.friends.find((frnd: any) => frnd.uid == userInfo?.user?.uid)) && users?.friends.find((frnd: any) => frnd.status == "friend") && <option key={i} value={users.userName}>{users.displayName}</option>
-                                                    ))
+                                                    currentUser?.friends
+                                                        .filter((friend: any) => !currentGroup?.members.some((member: any) => member._id === friend.reqUid))
+                                                        .map((friend: any, i: number) => (
+                                                            <option key={i} value={friend.reqUid}>{friend.displayName}</option>
+                                                        ))
                                                 }
                                             </select>
-                                            <div className="py-1">
-                                                <label htmlFor={`displayRole`} className='block pb-1 text-sm'>Who ?</label>
-                                                <input required id='displayRole' name='displayRole' type="text" placeholder='Sister' className='w-full outline-none border-none ring-1 ring-black/50 px-1 py-1 rounded-md text-sm' />
-                                            </div>
-                                            <div className="py-1">
-                                                <label htmlFor={`displayRole2`} className='block pb-1 text-sm'>You are ?</label>
-                                                <input required id='displayRole2' name='displayRole2' type="text" placeholder='Brother' className='w-full outline-none border-none ring-1 ring-black/50 px-1 py-1 rounded-md text-sm' />
-                                            </div>
-                                            <div className="py-1">
-                                                <label htmlFor={`role`} className='text-sm leading-[0.1] block pb-1'>Keyword <span className='text-xs text-red-600'>(Only one keyword and no space and no special character)</span></label>
-                                                <input required id='role' name='role' type="text" placeholder='sister' className='w-full outline-none border-none ring-1 ring-black/50 px-1 py-1 rounded-md text-sm' />
-                                            </div>
-                                            <div className="py-1">
-                                                <label htmlFor={`role2`} className='text-sm leading-[0.1] block pb-1'>Keyword (your role) <span className='text-xs text-red-600'>(Only one keyword and no space and no special character)</span></label>
-                                                <input required id='role2' name='role2' type="text" placeholder='brother' className='w-full outline-none border-none ring-1 ring-black/50 px-1 py-1 rounded-md text-sm' />
-                                            </div>
                                         </div>
                                     }
-                                    <button className='w-full block mt-2 rounded bg-blue-500 hover:bg-blue-600 transition-all duration-300 text-white text-md py-1'>Add</button>
+                                    {addingMember ?
+                                        <button className='w-full flex items-center justify-center mt-2 rounded bg-blue-500 hover:bg-blue-600 transition-all duration-300 text-white text-md py-1' disabled><img className="size-6 animate-spin mr-3 h-5 w-5" src="/icons/loading.svg" alt="family" /> Processing...</button> :
+                                        <button className='w-full block mt-2 rounded bg-blue-500 hover:bg-blue-600 transition-all duration-300 text-white text-md py-1'>Add</button>
+                                    }
                                 </form>
                             </div>
                         </div>
@@ -284,19 +250,24 @@ export default function MyFamily() {
                                     <h2 className='text-lg py-1 font-semibold text-blue-950 border-b-2 border-b-sky-500'>Shortcut</h2>
                                     <Shortcut />
                                 </div>
-                                <div className="h-fit bg-white w-[300px] mt-[10px] shadow rounded px-4 py-2 overflow-x-auto overflow-y-scroll custom-scroll hidden lg:block">
+                                <div className="h-[350px] bg-white w-full lg:w-[300px] mt-[10px] shadow rounded px-4 py-2 overflow-x-auto overflow-y-scroll">
                                     <h2 className='text-lg py-1 font-semibold text-blue-950 border-b-2 border-b-sky-500'>Memories</h2>
-                                    <Memories setSelectMemories={setSelectMemories} selectedMemories={selectedMemories} setMemoryPage={setMemoryPage} />
+                                    <Memories triggerRefetch={triggerRefetch} setSelectMemories={setSelectMemories} selectedMemories={selectedMemories} currentUser={currentUser} currentGroup={currentGroup} />
+                                </div>
+                                <div className="h-[350px] bg-white w-full md:w-[300px] mt-[10px] shadow rounded px-4 py-2 overflow-x-hidden overflow-y-scroll block lg:hidden">
+                                    <h2 className='text-lg py-1 font-semibold text-blue-950 border-b-2 border-b-sky-500'>Family Members</h2>
+                                    <button className='bg-blue-500 hover:bg-blue-600 w-full block my-1 py-1 rounded-md text-white transition-all duration-300' onClick={() => setOpenModal("block")}>Add Member</button>
+                                    <MemberList usersData={usersData} triggerRefetch={triggerRefetch} userInfo={userInfo} loader={loader} setLoader={setLoader} currentGroup={currentGroup} />
                                 </div>
                             </div>
 
                             <div className="xl:w-[700px] md:w-[550px] w-full h-auto mt-[10px] pb-2 overflow-x-hidden overflow-y-scroll custom-scroll rounded">
                                 {
-                                    selectedMemories == "" ? <FamilyGroup userInfo={userInfo} usersData={usersData} triggerRefetch={triggerRefetch} currentUser={currentUser} currentGroup={currentGroup} /> : <FamilyMemories memoryPage={memoryPage} />
+                                    selectedMemories == "" ? <FamilyGroup userInfo={userInfo} usersData={usersData} triggerRefetch={triggerRefetch} currentUser={currentUser} currentGroup={currentGroup} /> : <FamilyMemories currentGroup={currentGroup} memoryTitle={selectedMemories} />
                                 }
                             </div>
 
-                            <div className="h-fit bg-white w-full md:w-[300px] mt-[10px] shadow rounded px-4 py-2 custom-scroll">
+                            <div className="h-[350px] bg-white w-full md:w-[300px] mt-[10px] shadow rounded px-4 py-2 overflow-x-hidden overflow-y-scroll hidden lg:block">
                                 <h2 className='text-lg py-1 font-semibold text-blue-950 border-b-2 border-b-sky-500'>Family Members</h2>
                                 <button className='bg-blue-500 hover:bg-blue-600 w-full block my-1 py-1 rounded-md text-white transition-all duration-300' onClick={() => setOpenModal("block")}>Add Member</button>
                                 <MemberList usersData={usersData} triggerRefetch={triggerRefetch} userInfo={userInfo} loader={loader} setLoader={setLoader} currentGroup={currentGroup} />
