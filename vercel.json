@@ -21,7 +21,8 @@
         },
         {
             "src": "/(.*)",
-            "dest": "/src/app/$1"
+            "dest": "/src/app/$1",
+            "continue": true
         }
     ]
 }
