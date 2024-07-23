@@ -7,7 +7,7 @@ interface FamilyTreeProps {
 }
 
 export default function TreeMake({ data, rootId }: FamilyTreeProps) {
-    const root = data.find((member: any) => member.id === rootId);
+    const root = data.find((member: any) => member._id === rootId);
 
     if (!root) return null;
 
@@ -23,21 +23,32 @@ export default function TreeMake({ data, rootId }: FamilyTreeProps) {
         );
     };
 
+    const getSpouse = (spouseIds: string[]) => {
+        return spouseIds.map(spouseId => {
+            const spouse = data.find((member: any) => member._id === spouseId);
+            return spouse ? (
+                <div key={spouseId} className={`tree-person ${(spouse.sex === "male") ? "bg-blue-300" : (spouse.sex === "female") ? "bg-pink-300" : ""}`}>
+                    {spouse.name}
+                </div>
+            ) : null;
+        });
+    };
+
     return (
-        <div className="tree">
+        <div className="tree capitalize">
             <div className="tree-node">
                 <div className="tree-content">
                     <div className="tree-couple">
-                        <div className="tree-person">{root.name}</div>
-                        {
-                            root?.spouse && <div className="heart">
-                                <img src="/icons/love.svg" alt="family" />
-                            </div>
-                        }
-                        {root.spouse && (
-                            <div className="tree-person">
-                                {data.find((member: any) => member.id === root.spouse)?.name}
-                            </div>
+                        <div className={`tree-person ${(root.sex === "male") ? "bg-blue-300" : (root.sex === "female") ? "bg-pink-300" : ""}`}>
+                            {root.name}
+                        </div>
+                        {root.spouse.length > 0 && (
+                            <>
+                                <div className="heart">
+                                    <img src="/icons/love.svg" alt="family" />
+                                </div>
+                                {getSpouse(root.spouse)}
+                            </>
                         )}
                     </div>
                 </div>

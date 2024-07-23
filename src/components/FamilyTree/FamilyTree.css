@@ -76,7 +76,6 @@
     align-items: center;
     padding: 10px 20px;
     border: 1px solid #ccc;
-    background-color: #fff;
     margin: 0 5px;
     border-radius: 4px;
 }
@@ -88,7 +87,6 @@
     left: 0;
     right: 0;
     height: 0;
-    background-color: #ccc;
     z-index: -1;
 }
 
@@ -99,7 +97,6 @@
     left: 50%;
     width: 2px;
     height: 20px;
-    background-color: #ccc;
     transform: translateX(-50%);
     z-index: -1;
 }
@@ -110,3 +107,5 @@
     height: 20px;
     display: inline-block;
 }
+
+/* check */
