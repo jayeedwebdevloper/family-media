@@ -9,7 +9,7 @@
     "routes": [
         {
             "src": "/family-api/(.*)",
-            "dest": "/family-api/$1",
+            "dest": "/src/app/family-api/$1",
             "methods": [
                 "GET",
                 "POST",
