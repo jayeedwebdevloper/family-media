@@ -3,12 +3,13 @@ import { connectToDatabase } from '@/lib/database';
 import { ObjectId } from 'mongodb';
 
 // Config to enable body parsing
-export const config = {
-    api: {
-        bodyParser: true,
-    },
-};
-
+export const dynamic = 'auto'
+export const dynamicParams = true
+export const revalidate = false
+export const fetchCache = 'auto'
+export const runtime = 'nodejs'
+export const preferredRegion = 'auto'
+export const maxDuration = 5
 interface ProfileUpdate {
     [key: string]: any;
 }

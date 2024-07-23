@@ -2,12 +2,13 @@ import { ObjectId } from 'mongodb';
 import { connectToDatabase } from '@/lib/database';
 import { NextRequest, NextResponse } from 'next/server';
 
-export const config = {
-    api: {
-        bodyParser: true,
-    },
-};
-
+export const dynamic = 'auto'
+export const dynamicParams = true
+export const revalidate = false
+export const fetchCache = 'auto'
+export const runtime = 'nodejs'
+export const preferredRegion = 'auto'
+export const maxDuration = 5
 function generateId() {
     const timestamp = Date.now().toString(36);
     const randomPart = Math.random().toString(36).substring(2, 7);

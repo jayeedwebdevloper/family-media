@@ -1,9 +1,10 @@
-export const config = {
-    api: {
-        bodyParser: true,
-    },
-};
-
+export const dynamic = 'auto'
+export const dynamicParams = true
+export const revalidate = false
+export const fetchCache = 'auto'
+export const runtime = 'nodejs'
+export const preferredRegion = 'auto'
+export const maxDuration = 5
 import { connectToDatabase } from "@/lib/database";
 import { NextRequest, NextResponse } from "next/server";
 import { ObjectId } from "mongodb";
@@ -105,29 +106,29 @@ export async function PATCH(req: NextRequest) {
 
 
 export async function DELETE(req: NextRequest) {
-  try {
-    const { database } = await connectToDatabase();
-    const usersCollection = database.collection("users");
+    try {
+        const { database } = await connectToDatabase();
+        const usersCollection = database.collection("users");
 
-    const { userId, friendId } = await req.json();
+        const { userId, friendId } = await req.json();
 
-    if (!ObjectId.isValid(userId) || !ObjectId.isValid(friendId)) {
-      return NextResponse.json({ error: "Invalid user or friend ID" }, { status: 400 });
+        if (!ObjectId.isValid(userId) || !ObjectId.isValid(friendId)) {
+            return NextResponse.json({ error: "Invalid user or friend ID" }, { status: 400 });
+        }
+
+        const query = { _id: new ObjectId(userId) };
+        const update = { $pull: { friends: { uid: friendId } } };
+
+        const result = await usersCollection.updateOne(query, update);
+
+        if (result.modifiedCount === 0) {
+            return NextResponse.json({ error: "User or friend not found" }, { status: 404 });
+        }
+
+        return NextResponse.json({ message: "Friend deleted successfully" });
+    } catch (e) {
+        console.error("Error deleting friend:", e);
+        return NextResponse.json({ error: "Failed to delete friend" }, { status: 500 });
     }
-
-    const query = { _id: new ObjectId(userId) };
-    const update = { $pull: { friends: { uid: friendId } } };
-
-    const result = await usersCollection.updateOne(query, update);
-
-    if (result.modifiedCount === 0) {
-      return NextResponse.json({ error: "User or friend not found" }, { status: 404 });
-    }
-
-    return NextResponse.json({ message: "Friend deleted successfully" });
-  } catch (e) {
-    console.error("Error deleting friend:", e);
-    return NextResponse.json({ error: "Failed to delete friend" }, { status: 500 });
-  }
 }
 

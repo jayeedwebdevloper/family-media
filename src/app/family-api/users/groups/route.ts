@@ -3,12 +3,13 @@ import { ObjectId } from "mongodb";
 import { NextRequest, NextResponse } from "next/server";
 
 
-export const config = {
-    api: {
-        bodyParser: true,
-    },
-};
-
+export const dynamic = 'auto'
+export const dynamicParams = true
+export const revalidate = false
+export const fetchCache = 'auto'
+export const runtime = 'nodejs'
+export const preferredRegion = 'auto'
+export const maxDuration = 5
 export async function PUT(req: NextRequest) {
     try {
         const { database } = await connectToDatabase();
