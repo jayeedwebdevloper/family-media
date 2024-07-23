@@ -22,6 +22,11 @@
         {
             "src": "/(.*)",
             "dest": "/src/app/$1"
+        },
+        {
+            "src": "/(.*)",
+            "dest": "public/$1",
+            "continue": false
         }
     ]
 }
