@@ -24,6 +24,7 @@
     "react-day-picker": "^8.10.1",
     "react-dom": "^18",
     "react-hot-toast": "^2.4.1",
+    "react-swipeable": "^7.0.1",
     "yet-another-react-lightbox": "^3.21.1"
   },
   "devDependencies": {

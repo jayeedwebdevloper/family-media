@@ -84,12 +84,15 @@ export default function UserHeader(props: PropsType) {
                             </div>
                         }
                     </div>
-                    <ul className="flex gap-3 pe-8">
+                    <ul className="flex gap-3 pb-3 px-2 lg:pe-8 justify-start flex-1">
                         <li>
-                            <button onClick={() => setProfileRoute("post")} className={`w-[70px] ${profileRoute == "post" ? "text-blue-500 font-semibold" : ""}`}>Post</button>
+                            <button onClick={() => setProfileRoute("post")} className={`w-auto ${profileRoute == "post" ? "text-blue-500 font-semibold" : ""}`}>Post</button>
                         </li>
                         <li>
-                            <button onClick={() => setProfileRoute("about")} className={`w-[70px] ${profileRoute == "about" ? "text-blue-500 font-semibold" : ""}`}>About</button>
+                            <button onClick={() => setProfileRoute("about")} className={`w-auto ${profileRoute == "about" ? "text-blue-500 font-semibold" : ""}`}>About</button>
+                        </li>
+                        <li>
+                            <button onClick={() => setProfileRoute("time_line")} className={`w-auto ${profileRoute == "time_line" ? "text-blue-500 font-semibold" : ""}`}>Time Line</button>
                         </li>
                     </ul>
                 </div>

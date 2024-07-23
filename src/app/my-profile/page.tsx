@@ -4,7 +4,7 @@ import MyFamily from '@/components/Profile/MyFamily';
 import MyFriends from '@/components/Profile/MyFriends';
 import MyPost from '@/components/Profile/MyPost';
 import { onAuthStateChanged } from 'firebase/auth';
-import React, { useEffect, useState } from 'react'
+import React, { use, useEffect, useState } from 'react'
 
 export default function MyProfilePage() {
     const [profileRoute, setProfileRoute] = useState("post");
@@ -185,7 +185,36 @@ export default function MyProfilePage() {
         }
     }, []);
 
+    const [noteRoute, setNoteRoute] = useState<any>({})
+
     const currentUser = usersData?.find((user: any) => user.uid == userInfo?.user?.uid);
+    const [addingNote, setAddingNote] = useState(false);
+
+    const handleNote = (e: any) => {
+        e.preventDefault();
+        setAddingNote(true)
+        const form = e.target;
+        const title = form.title.value;
+        const note = form.note.value;
+
+        const noteBody = {
+            title,
+            note
+        }
+
+        fetch('/family-api/posts/notes', {
+            method: "PUT",
+            headers: {
+                'content-type': 'application/json'
+            },
+            body: JSON.stringify({ noteBody, userId: currentUser._id })
+        }).then(res => res.json())
+            .then(data => {
+                triggerRefetch();
+                form.reset();
+                setAddingNote(false);
+            })
+    }
     // console.log(currentUser)
 
     return (
@@ -203,14 +232,14 @@ export default function MyProfilePage() {
                             }
                             {
                                 currentUser?.avatar && <div className={`border-2 border-white shadow-md w-40 h-40 rounded-full absolute left-7 -bottom-8 z-[100] overflow-hidden ${!currentUser?.avatar && "bg-slate-400 flex justify-center items-center"}`}>
-                                        {
-                                            currentUser?.avatar ? <img className='w-full object-cover' src={currentUser?.avatar} alt="family" /> : <h1 className='text-sm font-semibold'>Not Added</h1>
-                                        }
-                                    </div>
+                                    {
+                                        currentUser?.avatar ? <img className='w-full object-cover' src={currentUser?.avatar} alt="family" /> : <h1 className='text-sm font-semibold'>Not Added</h1>
+                                    }
+                                </div>
                             }
                         </div>
-                        <div className="flex w-full bg-white shadow justify-center items-center">
-                            <div className="py-6 ps-[200px] justify-self-start flex-1">
+                        <div className="flex lg:flex-row flex-col w-full bg-white shadow justify-center items-center">
+                            <div className="py-6 lg:ps-[200px] justify-center lg:justify-start lg:flex-1">
                                 {
                                     currentUser && <div>
                                         <h1 className='text-blue-500 font-bold '>{currentUser.displayName}</h1>
@@ -218,31 +247,60 @@ export default function MyProfilePage() {
                                     </div>
                                 }
                             </div>
-                            <ul className="flex gap-3 pe-8">
+                            <ul className="flex gap-3 pb-3 px-2 lg:pe-8 justify-start flex-1">
                                 <li>
-                                    <button onClick={() => setProfileRoute("post")} className={`w-[70px] ${profileRoute == "post" ? "text-blue-500 font-semibold" : ""}`}>Post</button>
+                                    <button onClick={() => setProfileRoute("post")} className={`w-auto ${profileRoute == "post" ? "text-blue-500 font-semibold" : ""}`}>Post</button>
                                 </li>
                                 <li>
-                                    <button onClick={() => setProfileRoute("about")} className={`w-[70px] ${profileRoute == "about" ? "text-blue-500 font-semibold" : ""}`}>About</button>
+                                    <button onClick={() => setProfileRoute("about")} className={`w-auto ${profileRoute == "about" ? "text-blue-500 font-semibold" : ""}`}>About</button>
+                                </li>
+                                <li>
+                                    <button onClick={() => setProfileRoute("time_line")} className={`w-auto ${profileRoute == "time_line" ? "text-blue-500 font-semibold" : ""}`}>Time Line</button>
                                 </li>
                             </ul>
                         </div>
 
                         <div className="flex flex-col md:flex-row gap-3 justify-center h-full pb-4">
-                            <div>
-                                <div className="h-fit bg-white w-[300px] mt-[10px] shadow rounded px-4 py-2 overflow-x-auto overflow-y-scroll custom-scroll hidden lg:block">
+                            <div className='px-3'>
+                                <div className="h-[280px] bg-white w-full lg:w-[300px] mt-[10px] shadow rounded px-4 py-2 overflow-x-auto overflow-y-scroll block">
                                     <h2 className='text-lg py-1 font-semibold text-blue-950 border-b-2 border-b-sky-500'>My Friends</h2>
                                     <MyFriends profileRoute={profileRoute} profileCover={profileCover} usersData={usersData} triggerRefetch={triggerRefetch} />
+                                </div>
+                                <div className="h-[250px] block lg:hidden overflow-x-hidden overflow-y-scroll bg-white w-full md:w-[300px] mt-[10px] shadow rounded px-4 py-2">
+                                    <h2 className='text-lg py-1 font-semibold text-blue-950 border-b-2 border-b-sky-500'>My Notes</h2>
+
+                                    <form onSubmit={handleNote}>
+                                        <h1 className='text-sm font-semibold py-1'>Add Note</h1>
+                                        <input type="text" name='title' className='py-1 w-full px-2 text-sm outline-none ring-1 rounded-md' placeholder='Note Title' />
+                                        <textarea name="note" className='w-full py-1 px-2 text-sm outline-none ring-1 rounded-md h-[60px] mt-2' placeholder='write a note'></textarea>
+                                        {
+                                            addingNote ? <button className='w-full flex items-center justify-center rounded bg-lime-500 hover:bg-lime-600 transition-all duration-300 text-white py-1 text-xs px-3' disabled><img className="size-6 animate-spin mr-3 h-5 w-5" src="/icons/loading.svg" alt="family" /> Processing...</button> :
+                                                <button className='w-full py-1 px-3 text-xs bg-lime-500 hover:bg-lime-700 rounded-md text-white'>Post</button>
+                                        }
+                                    </form>
+
+                                    <MyFamily profileRoute={profileRoute} noteRoute={noteRoute} setNoteRoute={setNoteRoute} currentUser={currentUser} />
                                 </div>
                             </div>
 
                             <div className="xl:w-[700px] md:w-[550px] w-full h-auto mt-[10px] pb-2 overflow-x-hidden overflow-y-scroll custom-scroll rounded">
-                                <MyPost profileRoute={profileRoute} currentUser={currentUser} triggerRefetch={triggerRefetch} usersData={usersData} />
+                                <MyPost profileRoute={profileRoute} currentUser={currentUser} noteRoute={noteRoute} triggerRefetch={triggerRefetch} usersData={usersData} />
                             </div>
 
-                            <div className="h-fit bg-white w-full md:w-[300px] mt-[10px] shadow rounded px-4 py-2 custom-scroll">
-                                <h2 className='text-lg py-1 font-semibold text-blue-950 border-b-2 border-b-sky-500'>My Family</h2>
-                                <MyFamily profileRoute={profileRoute} profileCover={profileCover} />
+                            <div className="h-[400px] hidden lg:block overflow-x-hidden overflow-y-scroll bg-white w-full md:w-[300px] mt-[10px] shadow rounded px-4 py-2">
+                                <h2 className='text-lg py-1 font-semibold text-blue-950 border-b-2 border-b-sky-500'>My Notes</h2>
+
+                                <form onSubmit={handleNote}>
+                                    <h1 className='text-sm font-semibold py-1'>Add Note</h1>
+                                    <input type="text" name='title' className='py-1 w-full px-2 text-sm outline-none ring-1 rounded-md' placeholder='Note Title' />
+                                    <textarea name="note" className='w-full py-1 px-2 text-sm outline-none ring-1 rounded-md h-[60px] mt-2' placeholder='write a note'></textarea>
+                                    {
+                                        addingNote ? <button className='w-full flex items-center justify-center rounded bg-lime-500 hover:bg-lime-600 transition-all duration-300 text-white py-1 text-xs px-3' disabled><img className="size-6 animate-spin mr-3 h-5 w-5" src="/icons/loading.svg" alt="family" /> Processing...</button> :
+                                            <button className='w-full py-1 px-3 text-xs bg-lime-500 hover:bg-lime-700 rounded-md text-white'>Post</button>
+                                    }
+                                </form>
+
+                                <MyFamily profileRoute={profileRoute} noteRoute={noteRoute} setNoteRoute={setNoteRoute} currentUser={currentUser} />
                             </div>
                         </div>
                     </div>

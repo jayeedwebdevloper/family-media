@@ -27,12 +27,6 @@ export default function Shortcut() {
                         <span>Find Friends</span>
                     </Link>
                 </li>
-                <li className={`py-4 px-2 ${pathname == "/photos-videos" ? "bg-slate-100 rounded" : ""}`}>
-                    <Link className='flex gap-2 items-center' href="/photos-videos">
-                        <Image width={1000} height={1000} src="/icons/image.svg" alt='family' className='w-6' />
-                        <span>My Photos & Videos</span>
-                    </Link>
-                </li>
             </ul>
         </div>
     )

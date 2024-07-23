@@ -1,6 +1,8 @@
 'use client'
 import { auth } from '@/components/Authentication/AuthenticationParent';
+import ThereFrends from '@/components/Profile/UsersProfile/ThereFriends/ThereFrends';
 import UserHeader from '@/components/Profile/UsersProfile/UserHeader';
+import UserNotes from '@/components/Profile/UsersProfile/UserNotes';
 import UsersProfile from '@/components/Profile/UsersProfile/UsersProfile';
 import { onAuthStateChanged } from 'firebase/auth';
 import { useParams } from 'next/navigation';
@@ -58,8 +60,10 @@ export default function UserProfilePrev() {
         setRefetch(refetch + 1);
     };
 
+    const [noteRoute, setNoteRoute] = useState<any>({})
+
     return (
-        <div className='mt-20'>
+        <div className='mt-20 bg-stone-100'>
             {loader ? (
                 <div className='text-lg w-full h-screen flex items-center justify-center'>
                     Loading...
@@ -75,15 +79,39 @@ export default function UserProfilePrev() {
                             selectedUser={selectedUser}
                             userInfo={userInfo}
                             usersData={usersData}
-                        />
-                        <UsersProfile
-                            profileRoute={profileRoute}
-                            loader={loader}
-                            triggerRefetch={triggerRefetch}
-                            selectedUser={selectedUser}
-                            userInfo={userInfo}
-                            usersData={usersData}
-                        />
+                            />
+                            <div className="flex flex-col md:flex-row gap-3 justify-center h-full pb-4">
+                                <div className='px-3'>
+                                    <div className="h-[280px] bg-white w-full lg:w-[300px] mt-[10px] shadow rounded px-4 py-2 overflow-x-auto overflow-y-scroll block">
+                                        <h2 className='text-lg py-1 font-semibold text-blue-950 border-b-2 border-b-sky-500'>{selectedUser.displayName}'s Friends</h2>
+                                        <ThereFrends profileRoute={profileRoute} usersData={usersData} selectedUser={selectedUser} triggerRefetch={triggerRefetch} />
+                                    </div>
+                                    <div className="h-[250px] block lg:hidden overflow-x-hidden overflow-y-scroll bg-white w-full md:w-[300px] mt-[10px] shadow rounded px-4 py-2">
+                                        <h2 className='text-lg py-1 font-semibold text-blue-950 border-b-2 border-b-sky-500'>{selectedUser?.displayName}'s Notes</h2>
+
+                                        <UserNotes profileRoute={profileRoute} noteRoute={noteRoute} setNoteRoute={setNoteRoute} selectedUser={selectedUser} />
+                                    </div>
+                                </div>
+
+                                <div className="xl:w-[700px] md:w-[550px] w-full h-auto mt-[10px] pb-2 overflow-x-hidden overflow-y-scroll custom-scroll rounded">
+                                    <UsersProfile
+                                        profileRoute={profileRoute}
+                                        loader={loader}
+                                        triggerRefetch={triggerRefetch}
+                                        selectedUser={selectedUser}
+                                        userInfo={userInfo}
+                                        usersData={usersData}
+                                        noteRoute={noteRoute}
+                                        setNoteRoute={setNoteRoute}
+                                    />
+                                </div>
+
+                                <div className="h-[400px] hidden lg:block overflow-x-hidden overflow-y-scroll bg-white w-full md:w-[300px] mt-[10px] shadow rounded px-4 py-2">
+                                    <h2 className='text-lg py-1 font-semibold text-blue-950 border-b-2 border-b-sky-500'>{selectedUser?.displayName}'s Notes</h2>
+
+                                    <UserNotes profileRoute={profileRoute} noteRoute={noteRoute} setNoteRoute={setNoteRoute} selectedUser={selectedUser} />
+                                </div>
+                            </div>
                     </div>
                 ) : (
                     <div className='text-lg w-full h-screen flex items-center justify-center'>

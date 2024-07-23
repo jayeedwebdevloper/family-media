@@ -29,6 +29,7 @@ export async function POST(req: NextRequest) {
         user.posts = []
         user.groups = []
         user.families = []
+        user.notes = []
         const data = await usersCollection.insertOne(user);
         return NextResponse.json(data);
     } catch (e) {

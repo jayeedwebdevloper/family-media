@@ -8,6 +8,7 @@ import Memories from '@/components/Memories/Memories'
 import { onAuthStateChanged } from 'firebase/auth'
 import { CldUploadWidget } from 'next-cloudinary'
 import React, { useEffect, useState } from 'react'
+import toast from 'react-hot-toast'
 
 export default function MyFamily() {
 
@@ -170,6 +171,39 @@ export default function MyFamily() {
             })
     }
 
+    // console.log(changeCoverPhoto);
+
+    const handleChangeCover = async (data: any) => {
+        const cover = data?.secure_url;
+
+        if (cover) {
+            try {
+                const response = await fetch('/family-api/groups/cover', {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ coverPhoto: cover, groupId: currentGroup._id })
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    triggerRefetch();
+                    toast.success('Cover photo changed successfully');
+                } else {
+                    toast.error(data.error || 'Failed to change cover photo');
+                }
+            } catch (error) {
+                console.error('Error changing cover photo:', error);
+                toast.error('Failed to change cover photo');
+            }
+        } else {
+            toast.error('Cover photo URL is not available');
+        }
+    };
+
+
     return (
         loader ? <div className='text-lg w-full h-screen flex items-center justify-center bg-slate-200'>Loading...</div> : dataLoaded != true ? <div className='text-lg w-full h-screen flex items-center justify-center bg-slate-200'>Loading...</div> :
             (currentUser?.groups.length ?
@@ -190,17 +224,21 @@ export default function MyFamily() {
                                     }}
                                     uploadPreset="family_preset"
                                     onSuccess={(result, { widget }) => {
-                                        setChangeCover(result?.info);  // { public_id, secure_url, etc }
+                                        setChangeCover(result?.info);
+                                        handleChangeCover(result?.info); // Wait 1 second to ensure URL is available
                                         widget.close();
                                     }}
                                 >
                                     {({ open }) => {
                                         function handleOnClick() {
-                                            setChangeCover(undefined);
+                                            setChangeCover(null);
                                             open();
                                         }
                                         return (
-                                            <button className='rounded-md py-2 px-3 bg-black/50 text-white' onClick={handleOnClick}>
+                                            <button
+                                                className='rounded-md py-2 px-3 bg-black/50 text-white'
+                                                onClick={handleOnClick}
+                                            >
                                                 Change Photo
                                             </button>
                                         );

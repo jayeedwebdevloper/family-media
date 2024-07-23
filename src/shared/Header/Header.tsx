@@ -6,14 +6,16 @@ import Register from '@/components/Authentication/Register/Register';
 import FriendList from '@/components/FriendsControls/FriendList';
 import FriendsControls from '@/components/FriendsControls/FriendsControls';
 import { onAuthStateChanged } from 'firebase/auth';
+import { CldUploadWidget } from 'next-cloudinary';
 import Image from 'next/image'
 import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation';
 import React, { useEffect, useState } from 'react'
-import { Toaster } from 'react-hot-toast';
+import toast, { Toaster } from 'react-hot-toast';
 
 type ProfileMenuState = '-z-[1] -top-full overflow-hidden h-0' | 'z-[1] top-0 overflow-auto h-auto';
 type MainMenuState = true | false;
+
 
 export default function Header() {
     const [userInfo, setUserInfo] = useState<any>();
@@ -53,6 +55,7 @@ export default function Header() {
         const Logged = onAuthStateChanged(auth, (user) => {
             setUserInfo({ user });
             setLoader(false);
+            triggerRefetch()
         })
         return () => {
             Logged();
@@ -63,27 +66,84 @@ export default function Header() {
         logOut()
     }
 
+    const [usersData, setUsersData] = useState<any>([]);
+    const [refetch, setRefetch] = useState(0)
+
+    useEffect(() => {
+        const fetchData = async () => {
+            try {
+                const response = await fetch('/family-api/users');
+                const data = await response.json();
+                setUsersData(data);
+            } catch (error) {
+                console.error('Error fetching data:', error);
+            }
+        };
+
+        fetchData();
+    }, [refetch]);
+
+    const triggerRefetch = () => {
+        setRefetch(refetch + 1);
+    };
+
+    const currentUser = usersData?.find((user: any) => user.uid == userInfo?.user?.uid);
+
+    const [postPhoto, setPostPhoto] = useState<any>(undefined)
+
+    const handleUpdateFavicon = async (photo: any) => {
+        try {
+            const response = await fetch('/family-api/settings', {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ faviconUrl: photo.secure_url }),
+            });
+
+            const data = await response.json();
+
+            if (response.ok) {
+                toast.success('Favicon URL updated successfully');
+            } else {
+                toast.error(data.error || 'Failed to update favicon URL');
+            }
+        } catch (error) {
+            console.error('Error updating favicon URL:', error);
+            toast.error('Failed to update favicon URL');
+        }
+    };
+
+    const [faviconUrl, setFaviconUrl] = useState<string | null>(null);
+
+    useEffect(() => {
+        const fetchFavicon = async () => {
+            try {
+                const response = await fetch('/family-api/settings/logo');
+                const data = await response.json();
+                setFaviconUrl(data.faviconUrl);
+            } catch (error) {
+                console.error('Error fetching favicon:', error);
+            }
+        };
+
+        fetchFavicon();
+    }, []);
+    // console.log(faviconUrl);
+
     return (
         <header className='fixed top-0 left-0 right-0 w-full shadow pt-3 pb-4 z-[200] bg-white'>
             <Toaster />
-            {/* auth loader */}
-            <div className="hidden">
-                <HomePage loader={loader} />
-            </div>
 
 
             <div className="container md:px-6 mx-auto">
-                <nav className='flex justify-between relative px-3'>
+                <nav className='flex justify-between relative px-3 items-center'>
                     <div className="logo w-auto">
                         <Link href="/">
-                            {
-                                logo.map((data: any, i: any) => (
-                                    <Image className='w-[50px]' key={i} width={1000} height={1000} src={data.img} alt='family' />
-                                ))
-                            }
+                            <img className='w-[50px] h-[50px] object-cover' src={faviconUrl != null ? faviconUrl : '/icons/loading.svg'} alt="family" />
                         </Link>
                     </div>
-                    <div className="w-auto menu flex">
+                    <div className="w-auto menu flex items-center">
 
                         {/* menubar */}
                         <button onClick={openTheMenu} className='w-8 mx-3 block lg:hidden'>
@@ -94,25 +154,48 @@ export default function Header() {
                             <li className='block lg:hidden'>
                                 <div className="logo w-auto pt-2">
                                     <Link href="/">
-                                        {
-                                            logo.map((data: any, i: any) => (
-                                                <Image className='w-[50px]' key={i} width={1000} height={1000} src={data.img} alt='family' />
-                                            ))
-                                        }
+                                        <img className='w-[50px] h-[50px] object-cover' src={faviconUrl != null ? faviconUrl : '/icons/loading.svg'} alt="family" />
                                     </Link>
                                 </div>
                             </li>
                             <li><Link className={`hover:text-sky-600 font-semibold transition-all duration-500 ${pathname == "/" ? "text-sky-600" : ""}`} href="/">Feeds</Link></li>
-                            <li><Link className={`hover:text-sky-600 font-semibold transition-all duration-500 ${pathname == "/timeline" ? "text-sky-600" : ""}`} href="/timeline">Time Line</Link></li>
+
                             <li><Link className={`hover:text-sky-600 font-semibold transition-all duration-500 ${pathname == "/family-memories" ? "text-sky-600" : ""}`} href="/family-memories">Family Memories</Link></li>
                             <li><Link className={`hover:text-sky-600 font-semibold transition-all duration-500 ${pathname == "/family-tree" ? "text-sky-600" : ""}`} href="/family-tree">Family Tree</Link></li>
                             <li><Link className={`hover:text-sky-600 font-semibold transition-all duration-500 ${pathname == "/calender" ? "text-sky-600" : ""}`} href="/calender">Calender</Link></li>
-                            <li><Link className={`hover:text-sky-600 font-semibold transition-all duration-500 ${pathname == "/about" ? "text-sky-600" : ""}`} href="/about">About</Link></li>
+
+
                             <li><Link className={`hover:text-sky-600 font-semibold transition-all duration-500 ${pathname == "/contact" ? "text-sky-600" : ""}`} href="/contact">Contact</Link></li>
+
+                            <li>
+                                <CldUploadWidget
+                                    options={{
+                                        multiple: false
+                                    }}
+                                    uploadPreset="family_preset"
+                                    onSuccess={(result, { widget }) => {
+                                        handleUpdateFavicon(result?.info);  // { public_id, secure_url, etc }
+                                        widget.close();
+                                    }}
+                                >
+                                    {({ open }) => {
+                                        function handleOnClick() {
+                                            setPostPhoto(undefined);
+                                            open();
+                                        }
+                                        return (
+                                            <button className='capitalize text-sm' onClick={handleOnClick}>
+
+                                                Change Site Logo
+                                            </button>
+                                        );
+                                    }}
+                                </CldUploadWidget>
+                            </li>
                         </ul>
 
                         <div onMouseLeave={handleMouseLeave} className="profile relative ms-6 w-10 h-10 border shadow rounded-full cursor-pointer flex items-center justify-center hover:ring-4 hover:ring-sky-400/50 transition-all duration-300" onClick={profileClick}>
-                            <Image className={`w-6`} width={1000} height={1000} src={`/icons/profile.svg`} alt='family' />
+                            <img className={`w-full h-full object-cover rounded-full`} src={currentUser != undefined ? currentUser?.avatar : `/icons/profile.svg`} alt='family' />
 
                             {/* profile menu */}
                             {
