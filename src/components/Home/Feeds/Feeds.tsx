@@ -186,7 +186,7 @@ export default function Feeds() {
             });
 
             if (!response.ok) {
-                const errorData = await response.text();
+                const errorData = await response.text().catch(() => ({ error: 'Invalid JSON response' }));
                 console.error('Response status:', response.status);
                 console.error('Response text:', errorData);
                 throw new Error(`Network response was not ok: ${errorData}`);
